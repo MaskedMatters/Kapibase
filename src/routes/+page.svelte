@@ -8,7 +8,7 @@
     onMount(() => {
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                goto("/home");
+                goto("/dashboard/home");
             }
         })
     });
@@ -25,7 +25,7 @@
             const user = result.user;
 
             console.log("User signed in:", user);
-            goto("/home");
+            goto("/dashboard/home");
         } catch (error) {
             // Handle errors here
             console.error("Error signing in with Google:", error);
@@ -44,7 +44,7 @@
             const user = result.user;
 
             console.log("User signed in:", user);
-            goto("/home");
+            goto("/dashboard/home");
         } catch (error) {
             // Handle errors here
             console.error("Error signing in with Google:", error);
@@ -63,7 +63,7 @@
             const user = result.user;
 
             console.log("User signed in:", user);
-            goto("/home");
+            goto("/dashboard/home");
         } catch (error) {
             // Handle errors here
             console.error("Error signing in with GitHub:", error);
