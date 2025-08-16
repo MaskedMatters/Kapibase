@@ -1,6 +1,17 @@
 <script lang="ts">
-    import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, GithubAuthProvider } from "firebase/auth";
+    import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, GithubAuthProvider, onAuthStateChanged } from "firebase/auth";
     import { auth } from "$lib/firebase";
+
+    import { onMount } from "svelte";
+    import { goto } from "$app/navigation";
+
+    onMount(() => {
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                goto("/home");
+            }
+        })
+    });
 
     let userEmail = $state("");
     let userPassword = $state("");
@@ -14,6 +25,7 @@
             const user = result.user;
 
             console.log("User signed in:", user);
+            goto("/home");
         } catch (error) {
             // Handle errors here
             console.error("Error signing in with Google:", error);
@@ -32,6 +44,7 @@
             const user = result.user;
 
             console.log("User signed in:", user);
+            goto("/home");
         } catch (error) {
             // Handle errors here
             console.error("Error signing in with Google:", error);
@@ -50,6 +63,7 @@
             const user = result.user;
 
             console.log("User signed in:", user);
+            goto("/home");
         } catch (error) {
             // Handle errors here
             console.error("Error signing in with GitHub:", error);
