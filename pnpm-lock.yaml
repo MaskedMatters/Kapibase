@@ -14,6 +14,9 @@ importers:
       firebase:
         specifier: ^12.1.0
         version: 12.1.0
+      sveltefire:
+        specifier: ^0.4.5
+        version: 0.4.5(firebase@12.1.0)(svelte@5.38.1)
     devDependencies:
       '@sveltejs/adapter-auto':
         specifier: ^6.0.0
@@ -1025,6 +1028,12 @@ packages:
   svelte@5.38.1:
     resolution: {integrity: sha512-fO6CLDfJYWHgfo6lQwkQU2vhCiHc2MBl6s3vEhK+sSZru17YL4R5s1v14ndRpqKAIkq8nCz6MTk1yZbESZWeyQ==}
     engines: {node: '>=18'}
+
+  sveltefire@0.4.5:
+    resolution: {integrity: sha512-sNvDr4SadW1m5BF6Id7JIky3vOvTLOrP9w6vtcpvBo8TKvO4RqnohiRYGsFB2eK6RRKkA1H8ccuGd7sdbIrhFQ==}
+    peerDependencies:
+      firebase: ^9.0.0
+      svelte: ^4.0.0
 
   tailwindcss@4.1.12:
     resolution: {integrity: sha512-DzFtxOi+7NsFf7DBtI3BJsynR+0Yp6etH+nRPTbpWnS2pZBaSksv/JGctNwSWzbFjp0vxSqknaUylseZqMDGrA==}
@@ -2118,6 +2127,11 @@ snapshots:
       locate-character: 3.0.0
       magic-string: 0.30.17
       zimmerframe: 1.1.2
+
+  sveltefire@0.4.5(firebase@12.1.0)(svelte@5.38.1):
+    dependencies:
+      firebase: 12.1.0
+      svelte: 5.38.1
 
   tailwindcss@4.1.12: {}
 

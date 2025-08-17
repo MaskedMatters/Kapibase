@@ -1,12 +1,42 @@
 <script lang="ts">
     import { goto } from '$app/navigation';
     import { page } from '$app/state';
+    import { onMount } from 'svelte';
     
     import { auth } from '$lib/firebase';
     import { onAuthStateChanged, type User } from 'firebase/auth';
-    import { onMount } from 'svelte';
+
+    import { db } from '$lib/firebase';
+    import { doc, addDoc, setDoc, collection, getDoc, onSnapshot } from 'firebase/firestore';
 
     let user: User | null = $state(null);
+
+    let orgId = $state("");
+    let orgName = $state("");
+
+    function generateCode() {
+        const numbers = "0123456789";
+        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+        // helper to pick a random character from a string
+        function randomChar(str: string) {
+            return str[Math.floor(Math.random() * str.length)];
+        }
+
+        let code = "";
+        // 3 numbers
+        for (let i = 0; i < 3; i++) {
+            code += randomChar(numbers);
+        }
+        // 2 letters
+        for (let i = 0; i < 2; i++) {
+            code += randomChar(letters);
+        }
+        // last number
+        code += randomChar(numbers);
+
+        return code;
+    }
 
     async function signOutUser() {
         try {
@@ -15,6 +45,42 @@
         } catch (error) {
             console.error("Error signing out:", error);
         }
+    }
+
+    async function createOrg() {
+        const trimmedOrgName = orgName.trim();
+
+        if (trimmedOrgName.length > 24) {
+            alert("Organization name must be less than 24 characters.");
+            return;
+        } else if (trimmedOrgName.length < 4) {
+            alert("Organization name must be at least 4 characters.");
+            return;
+        } else if (/[^a-zA-Z0-9\s]/.test(trimmedOrgName)) {
+            alert("Organization name can only contain letters, numbers, and spaces.");
+            return;
+        }
+
+        const orgCode = generateCode();
+
+        const orgDoc = await addDoc(collection(db, 'organizations'), {
+            name: trimmedOrgName,
+            owner: user?.uid,
+            members: [user?.uid],
+            orgId: orgCode
+        });
+
+        await setDoc(doc(db, 'users', user!.uid), {
+            organization: {
+                uid: orgDoc.id,
+                id: orgCode,
+                administrator: true
+            }
+        }, { merge: true });
+    }
+
+    async function joinOrg() {
+        return;
     }
 
     onMount(() => {
@@ -94,34 +160,35 @@
 </dialog>
 
 <dialog id="OrgModal" class="modal">
-    <div class="modal-box max-w-4xl">
-        <form method="dialog">
-            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
-        </form>
-        <h2 class="text-xl font-bold text-center pb-2">Your Organization</h2>
-        <div class="flex justify-around items-center">
-            <div class="flex flex-col items-center gap-2 border-r border-gray-200 w-full">
-                <h3 class="text-lg">Join Organization</h3>
-                <fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4">
-                    <legend class="fieldset-legend">Org. ID</legend>
-                    <div class="join">
-                        <input type="text" class="input join-item" placeholder="ex. 012ab3" />
-                        <button class="btn join-item">Join</button>
-                    </div>
-                </fieldset>
-                <p class="text-sm text-center">Joining an organization will give you the member role to participate in forms and be managed.</p>
-            </div>
-            <div class="flex flex-col items-center gap-2 border-l border-gray-200 w-full">
-                <h3 class="text-lg">Create Organization</h3>
-                <fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4">
-                    <legend class="fieldset-legend">Org. Name</legend>
-                    <div class="join">
-                        <input type="text" class="input join-item" placeholder="ex. The Yay Company" />
-                        <button class="btn join-item">Make</button>
-                    </div>
-                </fieldset>
-                <p class="text-sm text-center">Creating an organization will make you a cool VIP account administrator with full permissions.</p>
+
+        <div class="modal-box max-w-4xl">
+            <form method="dialog">
+                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+            </form>
+            <h2 class="text-xl font-bold text-center pb-2">Your Organization</h2>
+            <div class="flex justify-around items-center">
+                <div class="flex flex-col items-center gap-2 border-r border-gray-200 w-full">
+                    <h3 class="text-lg">Join Organization</h3>
+                    <fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4">
+                        <legend class="fieldset-legend">Org. ID</legend>
+                        <div class="join">
+                            <input type="text" class="input join-item" placeholder="ex. 012ab3" bind:value={orgId} />
+                            <button class="btn join-item" onclick={joinOrg}>Join</button>
+                        </div>
+                    </fieldset>
+                    <p class="text-sm text-center">Joining an organization will give you the member role to participate in forms and be managed.</p>
+                </div>
+                <div class="flex flex-col items-center gap-2 border-l border-gray-200 w-full">
+                    <h3 class="text-lg">Create Organization</h3>
+                    <fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4">
+                        <legend class="fieldset-legend">Org. Name</legend>
+                        <div class="join">
+                            <input type="text" class="input join-item" placeholder="ex. The Yay Company" bind:value={orgName} />
+                            <button class="btn join-item" onclick={createOrg}>Make</button>
+                        </div>
+                    </fieldset>
+                    <p class="text-sm text-center">Creating an organization will make you a cool VIP account administrator with full permissions.</p>
+                </div>
             </div>
         </div>
-    </div>
 </dialog>
