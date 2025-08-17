@@ -1,6 +1,10 @@
 <script lang="ts">
     import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, GithubAuthProvider, onAuthStateChanged } from "firebase/auth";
+    import type { User } from "firebase/auth";
     import { auth } from "$lib/firebase";
+
+    import { doc, getDoc, setDoc } from "firebase/firestore";
+    import { db } from "$lib/firebase";
 
     import { onMount } from "svelte";
     import { goto } from "$app/navigation";
@@ -16,6 +20,22 @@
     let userEmail = $state("");
     let userPassword = $state("");
 
+    async function addUserToDb(user: User) {
+        const userDoc = doc(db, 'users', user.uid);
+        const userSnapshot = await getDoc(userDoc);
+
+        if (!userSnapshot.exists()) {
+            // If the user does not exist in the database, add them
+            await setDoc(userDoc, {
+                email: user.email,
+                photoURL: user.photoURL,
+                displayName: user.displayName
+            });
+
+            console.log("User added to database:", user);
+        }
+    }
+
     async function signInWithEmail() {
         try {
             // Sign in with email and password
@@ -23,6 +43,7 @@
 
             // Log user information
             const user = result.user;
+            addUserToDb(user);
 
             console.log("User signed in:", user);
             goto("/dashboard/home");
@@ -42,6 +63,7 @@
 
             // Log user information
             const user = result.user;
+            addUserToDb(user);
 
             console.log("User signed in:", user);
             goto("/dashboard/home");
@@ -61,6 +83,7 @@
 
             // Log user information
             const user = result.user;
+            addUserToDb(user);
 
             console.log("User signed in:", user);
             goto("/dashboard/home");
